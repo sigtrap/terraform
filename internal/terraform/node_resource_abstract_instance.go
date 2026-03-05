@@ -952,6 +952,9 @@ func (n *NodeAbstractResourceInstance) plan(
 	unmarkedConfigVal, unmarkedPaths := configValIgnored.UnmarkDeepWithPaths()
 	unmarkedPriorVal, _ := priorVal.UnmarkDeepWithPaths()
 
+	// remove computable block values from config
+	unmarkedConfigVal = objchange.PrepareComputedBlocks(schema.Body, unmarkedConfigVal)
+
 	proposedNewVal := objchange.ProposedNew(schema.Body, unmarkedPriorVal, unmarkedConfigVal)
 
 	// Call pre-diff hook
@@ -1176,6 +1179,9 @@ func (n *NodeAbstractResourceInstance) plan(
 		if origConfigVal.ContainsMarked() {
 			unmarkedConfigVal, _ = origConfigVal.UnmarkDeep()
 		}
+
+		// remove computable block values from config
+		unmarkedConfigVal = objchange.PrepareComputedBlocks(schema.Body, unmarkedConfigVal)
 
 		// create a new proposed value from the null state and the config
 		proposedNewVal = objchange.ProposedNew(schema.Body, nullPriorVal, unmarkedConfigVal)
