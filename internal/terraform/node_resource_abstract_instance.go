@@ -992,7 +992,7 @@ func (n *NodeAbstractResourceInstance) plan(
 	} else {
 		resp = provider.PlanResourceChange(providers.PlanResourceChangeRequest{
 			TypeName:           n.Addr.Resource.Resource.Type,
-			Config:             unmarkedConfigVal,
+			Config:             objchange.PrepareComputedBlocks(schema.Body, unmarkedConfigVal),
 			PriorState:         unmarkedPriorVal,
 			ProposedNewState:   proposedNewVal,
 			PriorPrivate:       priorPrivate,
@@ -1201,7 +1201,7 @@ func (n *NodeAbstractResourceInstance) plan(
 		} else {
 			resp = provider.PlanResourceChange(providers.PlanResourceChangeRequest{
 				TypeName:           n.Addr.Resource.Resource.Type,
-				Config:             unmarkedConfigVal,
+				Config:             objchange.PrepareComputedBlocks(schema.Body, unmarkedConfigVal),
 				PriorState:         nullPriorVal,
 				ProposedNewState:   proposedNewVal,
 				PriorPrivate:       plannedPrivate,
