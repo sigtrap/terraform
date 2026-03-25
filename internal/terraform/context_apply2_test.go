@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"math/rand"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -4891,4 +4892,64 @@ func TestContext2Apply_outputWithTypeContraint(t *testing.T) {
 			t.Errorf("unexpected extra output value %q", gotName)
 		}
 	}
+}
+
+func TestContext2Apply_storedPrivatePlanData(t *testing.T) {
+	m := testModuleInline(t, map[string]string{
+		"main.tf": `
+resource "test_resource" "foo" {
+}
+
+resource "test_resource" "bar" {
+  value = test_resource.foo.computed
+}
+`,
+	})
+
+	p := testProvider("test")
+	p.GetProviderSchemaResponse = getProviderSchemaResponseFromProviderSchema(&providerSchema{
+		ResourceTypes: map[string]*configschema.Block{
+			"test_resource": {
+				Attributes: map[string]*configschema.Attribute{
+					"id":       {Type: cty.String, Computed: true},
+					"value":    {Type: cty.String, Optional: true},
+					"computed": {Type: cty.String, Computed: true},
+				},
+			},
+		},
+	})
+
+	// make sure we can correctly re-plan a value which was stored in the
+	// PlannedPrivate data from our initial plan
+	p.PlanResourceChangeFn = func(req providers.PlanResourceChangeRequest) (resp providers.PlanResourceChangeResponse) {
+		planned := req.ProposedNewState.AsValueMap()
+		if req.PlannedPrivate != nil {
+			// fetch the originally planned random string
+			planned["computed"] = cty.StringVal(string(req.PlannedPrivate))
+		} else {
+			// this is our first plan, so generate a new computed value
+			s := fmt.Sprintf("%d", rand.Int())
+			planned["computed"] = cty.StringVal(s)
+			resp.PlannedPrivate = []byte(s)
+		}
+
+		planned["id"] = cty.UnknownVal(cty.String)
+		resp.PlannedState = cty.ObjectVal(planned)
+		return resp
+	}
+
+	ctx := testContext2(t, &ContextOpts{
+		Providers: map[addrs.Provider]providers.Factory{
+			addrs.NewDefaultProvider("test"): testProviderFuncFixed(p),
+		},
+	})
+
+	plan, diags := ctx.Plan(m, states.NewState(), DefaultPlanOpts)
+	tfdiags.AssertNoErrors(t, diags)
+
+	// we don't need to try and determine what the correct random value was, if
+	// the planing was incorrect apply would fail with "Provider produced
+	// inconsistent final plan"
+	_, diags = ctx.Apply(plan, m, nil)
+	tfdiags.AssertNoErrors(t, diags)
 }
