@@ -39,6 +39,11 @@ func (b *Block) internalValidate(prefix string) error {
 			continue
 		}
 		multiErr = errors.Join(multiErr, attrS.internalValidate(name, prefix))
+
+		// all attributes within a computed block must also be computed
+		if b.Computed && !attrS.Computed {
+			multiErr = errors.Join(multiErr, fmt.Errorf("%s%s: all attributes within computed blocks must also be computed", prefix, name))
+		}
 	}
 
 	for name, blockS := range b.BlockTypes {
@@ -58,6 +63,11 @@ func (b *Block) internalValidate(prefix string) error {
 
 		if blockS.MinItems < 0 || blockS.MaxItems < 0 {
 			multiErr = errors.Join(multiErr, fmt.Errorf("%s%s: MinItems and MaxItems must both be greater than zero", prefix, name))
+		}
+
+		// any nested blocks within a computed block must also be computed
+		if b.Computed && !blockS.Computed {
+			multiErr = errors.Join(multiErr, fmt.Errorf("%s%s: all nested blocks within computed blocks must also be computed", prefix, name))
 		}
 
 		switch blockS.Nesting {
