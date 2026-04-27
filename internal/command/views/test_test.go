@@ -2031,14 +2031,14 @@ func TestTestJSON_DestroySummary(t *testing.T) {
 					"@module":   "terraform.ui",
 					"@testfile": "main.tftest.hcl",
 					"@testrun":  "run_block",
-					"test_cleanup_skipped": map[string]interface{}{
-						"resources": []interface{}{
+					"test_cleanup": map[string]interface{}{
+						"skipped_resources": []interface{}{
 							map[string]interface{}{
 								"instance": "test.foo",
 							},
 						},
 					},
-					"type": "test_cleanup_skipped",
+					"type": "test_cleanup",
 				},
 			},
 		},

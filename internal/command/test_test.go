@@ -813,6 +813,10 @@ func TestTest_Cleanup(t *testing.T) {
   run "test_three"... pass
   run "test_four"... pass
 main.tftest.hcl... tearing down
+
+Terraform left the following resources in state after executing
+main.tftest.hcl/test_two because the skip_cleanup attribute was set:
+  - test_resource.resource
 main.tftest.hcl... fail
 
 Failure! 4 passed, 0 failed.
@@ -948,6 +952,10 @@ Success!
 
 		expectedCleanup := `main.tftest.hcl... in progress
 main.tftest.hcl... tearing down
+
+Terraform left the following resources in state after executing
+main.tftest.hcl/test_two because the skip_cleanup attribute was set:
+  - test_resource.resource
 main.tftest.hcl... pass
 
 Success!
@@ -3273,9 +3281,10 @@ main.tftest.hcl... in progress
   run "test_four"... pass
   run "test_five"... pass
 main.tftest.hcl... tearing down
+
 Terraform left the following resources in state after executing
 main.tftest.hcl/test_three because the skip_cleanup attribute was set:
-	- test_resource.resource
+  - test_resource.resource
 main.tftest.hcl... pass
 
 Success! 5 passed, 0 failed.
@@ -3365,6 +3374,10 @@ func TestTest_SkipCleanupWithRunDependencies(t *testing.T) {
   run "test_two"... pass
   run "test_three"... pass
 main.tftest.hcl... tearing down
+
+Terraform left the following resources in state after executing
+main.tftest.hcl/test_two because the skip_cleanup attribute was set:
+  - test_resource.resource
 main.tftest.hcl... pass
 
 Success! 3 passed, 0 failed.
@@ -3546,7 +3559,7 @@ func TestTest_SkipCleanup_JSON(t *testing.T) {
 			`{"@level":"info","@message":"  \"test_five\"... pass","@module":"terraform.ui","@testfile":"main.tftest.hcl","@testrun":"test_five","test_run":{"path":"main.tftest.hcl","progress":"complete","run":"test_five","status":"pass"},"type":"test_run"}`,
 			`{"@level":"info","@message":"main.tftest.hcl... tearing down","@module":"terraform.ui","@testfile":"main.tftest.hcl","test_file":{"path":"main.tftest.hcl","progress":"teardown"},"type":"test_file"}`,
 			`{"@level":"info","@message":"  \"test_three\"... tearing down","@module":"terraform.ui","@testfile":"main.tftest.hcl","@testrun":"test_three","test_run":{"path":"main.tftest.hcl","progress":"teardown","run":"test_three"},"type":"test_run"}`,
-				`{"@level":"info","@message":"Terraform left some resources in state after executing main.tftest.hcl/test_three because the skip_cleanup attribute was set.","@module":"terraform.ui","@testfile":"main.tftest.hcl","@testrun":"test_three","test_cleanup_skipped":{"resources":[{"instance":"test_resource.resource"}]},"type":"test_cleanup_skipped"}`,
+			`{"@level":"info","@message":"Terraform left some resources in state after executing main.tftest.hcl/test_three because the skip_cleanup attribute was set.","@module":"terraform.ui","@testfile":"main.tftest.hcl","@testrun":"test_three","test_cleanup":{"skipped_resources":[{"instance":"test_resource.resource"}]},"type":"test_cleanup"}`,
 			`{"@level":"info","@message":"main.tftest.hcl... pass","@module":"terraform.ui","@testfile":"main.tftest.hcl","test_file":{"path":"main.tftest.hcl","progress":"complete","status":"pass"},"type":"test_file"}`,
 			`{"@level":"info","@message":"Success! 5 passed, 0 failed.","@module":"terraform.ui","test_summary":{"errored":0,"failed":0,"passed":5,"skipped":0,"status":"pass"},"type":"test_summary"}`,
 		}
@@ -3627,6 +3640,10 @@ func TestTest_SkipCleanup_FileLevelFlag(t *testing.T) {
   run "test_four"... pass
   run "test_five"... pass
 main.tftest.hcl... tearing down
+
+Terraform left the following resources in state after executing
+main.tftest.hcl/test_four because the skip_cleanup attribute was set:
+  - test_resource.resource
 main.tftest.hcl... pass
 
 Success! 5 passed, 0 failed.
